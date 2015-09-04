@@ -22,7 +22,7 @@ def rn(arg):
     if not arg:
         return "Specify nick name"
     else:
-        nn = arg.lower()
+        nn = arg
 
     stat = {}
 
