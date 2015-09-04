@@ -39,7 +39,7 @@ def rn(arg):
 
     sstat = sorted(stat.items(), key=operator.itemgetter(1), reverse=True)
     #print(sstat, file=sys.stderr)
-    sstat = sstat[:7]
+    sstat = [ x for x in sstat[:7] if x[1] > 0 ]
 
     return nn + ': ' + ', '.join([ "{0}({1})".format(x[0], x[1]) for x in sstat ])
 
