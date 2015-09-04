@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+
+import os, time, datetime, re, sys
+import itertools
+import operator
+import praw
+import saxo
+
+import pprint
+
+def warning(*objs):
+    print("WARNING: ", *objs, file=sys.stderr)
+
+subreddit_r = re.compile('[a-zA-Z0-9]+')
+
+@saxo.command()
+def rn(arg):
+    if not saxo.env("base"):
+        return "Sorry, this command requires an IRC instance"
+    if not arg:
+        return "Specify nick name"
+    else:
+        nn = arg.lower()
+
+    stat = {}
+
+    path = os.path.join(saxo.env("base"), "database.sqlite3")
+
+    with saxo.database(path) as db:
+        c = db.connection.cursor()
+
+        rtables = c.execute("SELECT name FROM sqlite_master WHERE type = 'table' and name like 'reddit_%' and name != 'reddit_stat'").fetchall()
+        for t in rtables:
+            tname = t[0][len('reddit_'):]
+            count = c.execute("select count(*) from %s where req_by = ? COLLATE NOCASE" % t[0], [nn]).fetchone()
+            stat[tname] = int(count[0])
+
+    sstat = sorted(stat.items(), key=operator.itemgetter(1), reverse=True)
+    #print(sstat, file=sys.stderr)
+    sstat = sstat[:7]
+
+    return nn + ': ' + ', '.join([ "{0}({1})".format(x[0], x[1]) for x in sstat ])
+
