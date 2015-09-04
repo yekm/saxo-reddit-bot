@@ -41,5 +41,7 @@ def rn(arg):
     #print(sstat, file=sys.stderr)
     sstat = [ x for x in sstat[:7] if x[1] > 0 ]
 
+    if len(sstat) is 0:
+        return nn + ': no stats'
     return nn + ': ' + ', '.join([ "{0}({1})".format(x[0], x[1]) for x in sstat ])
 
