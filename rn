@@ -22,7 +22,7 @@ def rn(arg):
     if not arg:
         return "Specify nick name"
     else:
-        nn = arg
+        nn = arg.strip()
 
     stat = {}
 
@@ -34,7 +34,7 @@ def rn(arg):
         rtables = c.execute("SELECT name FROM sqlite_master WHERE type = 'table' and name like 'reddit_%' and name != 'reddit_stat'").fetchall()
         for t in rtables:
             tname = t[0][len('reddit_'):]
-            count = c.execute("select count(*) from %s where req_by = ? COLLATE NOCASE" % t[0], [nn]).fetchone()
+            count = c.execute("select count(*) from %s where req_by like ? COLLATE NOCASE" % t[0], (nn,)).fetchone()
             stat[tname] = int(count[0])
 
     sstat = sorted(stat.items(), key=operator.itemgetter(1), reverse=True)
