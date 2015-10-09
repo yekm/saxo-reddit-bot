@@ -48,10 +48,10 @@ def r(arg):
 
         tname = "reddit_%s" % sname
         if not tname in db:
-            db[tname].create(('url', 'text unique'), ('req_by', str))
+            db[tname].create(('url', 'text unique'), ('req_by', str), ('title', 'text default null'))
 
-        urls = c.execute("select url from %s where req_by = ''" % tname).fetchmany(n)
-        if urls == None or urls == []:
+        posts = c.execute("select url, title from %s where req_by = ''" % tname).fetchmany(n)
+        if posts == None or posts == []:
             rtime = c.execute("select value from reddit_stat where name = ?", [tname]).fetchone()
             if rtime != None and rtime[0] == str(datetime.date.today()):
                 return "No more %s for today" % sname
@@ -60,25 +60,26 @@ def r(arg):
                 s = reddit.get_subreddit(sname).get_hot(limit=32)
                 for x in s:
                     if 'imgur.com' in x.url or x.url.endswith(('.jpg', '.jpeg', '.gif', '.png', '.gifv', '.webm')):
-                        c.execute("replace into %s values(?, '')" % tname, [x.url])
+                        c.execute("replace into %s values(?, '', ?)" % tname, [x.url, x.title])
                 db.commit()
             except:
                 drop_empty(db, tname)
-                return "Something went wrong while fetching urls. Sorry."
+                return "Something went wrong while fetching posts. Sorry."
             c.execute("replace into reddit_stat values (?, ?)", [tname, str(datetime.date.today())])
             db.commit()
-            urls = c.execute("select url from %s where req_by = ''" % tname).fetchmany(n)
+            posts = c.execute("select url, title from %s where req_by = ''" % tname).fetchmany(n)
 
-        if urls == None or urls == []:
+        if posts == None or posts == []:
             drop_empty(db, tname)
-            return "No more urls. Maybe I can't get any pictures. Maybe you specified bad subreddit. Or maybe reddit is down."
+            return "No more posts. Maybe I can't get any pictures. Maybe you specified bad subreddit. Or maybe reddit is down."
 
         req_nick = saxo.env("nick").encode('utf-8', 'surrogateescape').decode('utf-8')
-        urls = list(itertools.chain(*urls))
+
+        urls = [ p[0] for p in posts ]
         req_nicks = [req_nick] * len(urls)
         vals = list(zip(urls, req_nicks))
         #warning(vals, len(vals))
-        c.executemany("replace into %s values (?, ?)" % tname, vals)
+        c.executemany("replace into %s (url, req_by) values (?, ?)" % tname, vals)
         db.commit()
 
         rurls = ''
@@ -86,5 +87,7 @@ def r(arg):
             if 'imgur.com' in u and u.endswith('.gif'):
                 u += 'v'
             rurls += ' ' + u
+        if n == 1 and posts[0][1] is not None:
+            rurls += ' ' + posts[0][1]
         return rurls
 
