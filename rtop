@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+
+import os, time, datetime, re, sys
+import itertools
+import operator
+import praw
+import saxo
+
+from collections import Counter
+
+import pprint
+
+def warning(*objs):
+    print("WARNING: ", *objs, file=sys.stderr)
+
+subreddit_r = re.compile('[a-zA-Z0-9]+')
+
+@saxo.command()
+def rtop(arg):
+    if not saxo.env("base"):
+        return "Sorry, this command requires an IRC instance"
+    if not arg:
+        return "Specify nick name"
+    else:
+        wat = arg.strip()
+
+    stat = {}
+
+    path = os.path.join(saxo.env("base"), "database.sqlite3")
+
+    with saxo.database(path) as db:
+        c = db.connection.cursor()
+
+        rtables = c.execute("SELECT name FROM sqlite_master WHERE type = 'table' and name like 'reddit_%' and name != 'reddit_stat'").fetchall()
+        if wat == "sub":
+            for t in rtables:
+                tname = t[0][len('reddit_'):]
+                count = c.execute("select count(*) from %s where req_by not null" % t[0]).fetchone()
+                stat[tname] = int(count[0])
+        elif wat == "fap":
+            F = Counter()
+            for t in rtables:
+                top = c.execute("select req_by,count(*) from %s where req_by != '' group by req_by order by 1 desc;" % t[0]).fetchall()
+                F = F + Counter(dict(top))
+            stat = F
+        else:
+            return "So such stat yet."
+
+    sstat = sorted(stat.items(), key=operator.itemgetter(1), reverse=True)
+    #print(sstat, file=sys.stderr)
+    sstat = [ x for x in sstat[:7] if x[1] > 0 ]
+
+    if len(sstat) is 0:
+        return nn + ': no stats'
+    return wat + ': ' + ', '.join([ "{0}:{1}".format(x[0], x[1]) for x in sstat ])
+
