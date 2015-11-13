@@ -31,5 +31,5 @@ def rs(arg):
             return "No such subreddit"
 
         top = c.execute("select count(*),req_by from %s where req_by != '' group by req_by order by 1 desc;" % tname).fetchmany(5)
-        return sname + ': ' + ', '.join([ "{0}({1})".format(x[1], x[0]) for x in top ])
+        return sname + ': ' + ', '.join([ "{0}:{1}".format(x[1], x[0]) for x in top ])
 
