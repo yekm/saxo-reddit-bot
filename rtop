@@ -22,7 +22,7 @@ def rtop(arg):
     if not saxo.env("base"):
         return "Sorry, this command requires an IRC instance"
     if not arg:
-        return "Specify nick name"
+        return "Specify stat type. fap|sub."
     else:
         wat = arg.strip()
 
