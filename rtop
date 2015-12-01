@@ -37,7 +37,7 @@ def rtop(arg):
         if wat == "sub":
             for t in rtables:
                 tname = t[0][len('reddit_'):]
-                count = c.execute("select count(*) from %s where req_by not null" % t[0]).fetchone()
+                count = c.execute("select count(*) from %s where req_by != ''" % t[0]).fetchone()
                 stat[tname] = int(count[0])
         elif wat == "fap":
             F = Counter()
