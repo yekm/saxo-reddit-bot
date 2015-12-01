@@ -46,7 +46,7 @@ def rtop(arg):
                 F = F + Counter(dict(top))
             stat = F
         else:
-            return "So such stat yet."
+            return "No such stat yet."
 
     sstat = sorted(stat.items(), key=operator.itemgetter(1), reverse=True)
     #print(sstat, file=sys.stderr)
