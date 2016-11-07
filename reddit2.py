@@ -11,6 +11,7 @@ import praw
 import pprint
 
 subreddit_r = re.compile('[a-zA-Z0-9]+')
+subreddit_r = re.compile('cats?_?(gifs)?')
 
 def drop_empty(db, tname):
     c = db.connection.cursor()
@@ -36,6 +37,10 @@ def r2(arg, saxo):
         return "wat?"
     if not subreddit_r.match(sname):
         return "Sorry, subreddit name must match " + subreddit_r.pattern
+
+    req_nick = saxo.env("nick").encode('utf-8', 'surrogateescape').decode('utf-8')
+    if req_nick == "Lavos" and cats_r.match(sname, flags=re.I):
+        return "The struggle is real. Welcome back."
 
     path = os.path.join(saxo.env("base"), "database.sqlite3")
     with saxo.database(path) as db:
@@ -71,8 +76,6 @@ def r2(arg, saxo):
         if posts == None or posts == []:
             drop_empty(db, tname)
             return "No more posts. Maybe I can't get any pictures. Maybe you specified bad subreddit. Or maybe reddit is down."
-
-        req_nick = saxo.env("nick").encode('utf-8', 'surrogateescape').decode('utf-8')
 
         urls = [ p[0] for p in posts ]
         req_nicks = [req_nick] * len(urls)

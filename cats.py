@@ -10,7 +10,7 @@ import saxo
 sys.path.append('/home/docker/ircbot/saxo/reddit')
 from reddit2 import r2
 
-regex_link = re.compile(r"\b[кКkK][0oOоОAaАа][тТTt][эЭ3зЗiI1иИN]")
+regex_link = re.compile(r"\b[кКkK][0oOоОAaАа][тТTt1][эЭ3зЗiI1иИN]")
 
 @saxo.event("PRIVMSG")
 def cats(irc):
